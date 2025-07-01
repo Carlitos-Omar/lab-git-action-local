@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: mariadb_container
+    environment:
+      MARIADB_ROOT_PASSWORD: fadic123
+      MARIADB_DATABASE: laboratorio_isa
+    volumes:
+      - ./src/db/laboratorio.sql:/docker-entrypoint-initdb.d/laboratorio.sql
+    ports:
+      - "3310:3306"
+    networks:
+      - lab-clinico-network
+
+  backend:
+    build: .
+    container_name: springboot_backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/laboratorio_isa
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: fadic123
+    ports:
+      - "8090:8080"
+    networks:
+      - lab-clinico-network
+
+networks:
+  lab-clinico-network:
+    driver: bridge
