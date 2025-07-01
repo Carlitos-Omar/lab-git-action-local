@@ -10,6 +10,7 @@ env:
   APP_CONTAINER_NAME: 'springboot_backend'
   SONAR_HOST_URL: 'http://localhost:9000'
   SONAR_TOKEN: 'squ_4d43d0a4c06e2c4687cb9b2a2a9f423cb95451d0'
+
 jobs:
   analyze-and-deploy:
     runs-on: self-hosted
@@ -18,13 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Configurar JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
 
       - name: Compilar el backend
         run: mvn -B clean package -DskipTests
@@ -39,14 +33,7 @@ jobs:
 
       - name: Desplegar con Docker Compose
         run: |
-          echo "🧹 Limpiando contenedores anteriores..."
           docker compose -p ${{ env.DOCKER_PROJECT_NAME }} down -v --remove-orphans || true
-
-          echo "🏗️ Construyendo e iniciando contenedores..."
           docker compose -p ${{ env.DOCKER_PROJECT_NAME }} up -d --build
-
-          echo "🔍 Contenedores activos:"
           docker compose -p ${{ env.DOCKER_PROJECT_NAME }} ps
-
-          echo "📄 Logs del backend:"
           docker logs --tail 100 ${{ env.APP_CONTAINER_NAME }}
